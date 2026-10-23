@@ -13,6 +13,9 @@ dev = [
 pythonpath = ["src"]
 testpaths = ["tests"]
 
-
 [tool.pyright] # for pylance
 extraPaths = ["src"]
+
+[tool.ruff.lint]
+# allow unused comment directives
+unfixable = ["RUF100"]

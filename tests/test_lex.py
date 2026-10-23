@@ -1,8 +1,11 @@
+# ruff: noqa: F401
+
 import pytest
 
 from lex import (
     CloseParenToken,
     IdentifierToken,
+    NumberToken,
     OpenParenToken,
     Token,
     lex,
@@ -19,6 +22,10 @@ from lex import (
             [OpenParenToken(), OpenParenToken(), CloseParenToken(), CloseParenToken()],
         ),
         ("(foo)", [OpenParenToken(), IdentifierToken("foo"), CloseParenToken()]),
+        ("(1)", [OpenParenToken(), NumberToken(1), CloseParenToken()]),
+        ("(-1)", [OpenParenToken(), NumberToken(-1), CloseParenToken()]),
+        ("(3.1415)", [OpenParenToken(), NumberToken(3.1415), CloseParenToken()]),
+        ("(-3.1415)", [OpenParenToken(), NumberToken(-3.1415), CloseParenToken()]),
     ],
 )
 def test_lex(src: str, want: list[Token]):

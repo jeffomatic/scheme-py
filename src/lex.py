@@ -76,6 +76,11 @@ class _Src:
                 toks.append(ident)
                 continue
 
+            num = self.consume_number()
+            if num:
+                toks.append(num)
+                continue
+
             raise LexError()
 
         return toks
@@ -88,6 +93,11 @@ class _Src:
         if self.done():
             return
         self.cur += 1
+
+    def prev(self):
+        if self.cur < 1:
+            return
+        self.cur -= 1
 
     def done(self):
         return self.cur >= len(self.src)
@@ -119,6 +129,46 @@ class _Src:
             raise LexError()
 
         return IdentifierToken(text)
+
+    def consume_number(self) -> NumberToken | None:
+        if self.consume_char("-"):
+            num = self.consume_positive_number()
+            if num == None:
+                self.prev()  # unconsume '-' character
+                return None
+            return NumberToken(-num.value)
+
+        return self.consume_positive_number()
+
+    def consume_positive_number(self) -> NumberToken | None:
+        text = ""
+
+        while not self.done():
+            c = self.peek()
+            if c == ")" or c.isspace():
+                break
+
+            if c.isnumeric():
+                text += c
+                self.next()
+                continue
+
+            if c == ".":
+                if len(text) < 1:
+                    raise LexError()
+                if "." in text:
+                    raise LexError()
+
+                text += "."
+                self.next()
+                continue
+
+            raise LexError()
+
+        if len(text) < 1:
+            return None
+
+        return NumberToken(float(text))
 
 
 def lex(input: str) -> list[Token]:
