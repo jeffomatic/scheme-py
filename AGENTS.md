@@ -1,0 +1,1 @@
+This repo is a toy scheme interpreter implemented in python. I want to type the code out myself, so in chat sessions, please avoid emitting large chunks of code, and instead prefer brief, explanatory examples.
