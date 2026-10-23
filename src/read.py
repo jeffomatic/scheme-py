@@ -1,0 +1,61 @@
+from lex import (
+    CloseParenToken,
+    IdentifierToken,
+    NumberToken,
+    OpenParenToken,
+    Token,
+    lex,
+)
+from values import EmptyListValue, NumberValue, PairValue, SymbolValue, Value
+
+
+class ReadError(Exception):
+    pass
+
+
+def read(src: str) -> list[Value]:
+    return Reader(lex(src)).read()
+
+
+class Reader:
+    toks: list[Token]
+    cur: int
+
+    def __init__(self, toks: list[Token]):
+        self.toks = toks
+        self.cur = 0
+
+    def read(self) -> list[Value]:
+        top_level: list[Value] = []
+        while self.cur < len(self.toks):
+            top_level.append(self.read_single_value())
+        return top_level
+
+    def read_single_value(self) -> Value:
+        t = self.toks[self.cur]
+        self.cur += 1
+
+        match t:
+            case OpenParenToken():
+                return self.read_list()
+            case NumberToken(val):
+                return NumberValue(val)
+            case IdentifierToken(text):
+                return SymbolValue(text)
+            case _:
+                raise ReadError()
+
+    def read_list(self) -> PairValue | EmptyListValue:
+        """
+        Read list, starting after the open paren, all the way to the matching
+        closing paren.
+        """
+        first = self.toks[self.cur]
+
+        if isinstance(first, CloseParenToken):
+            self.cur += 1
+            return EmptyListValue()
+
+        car = self.read_single_value()
+        cdr = self.read_list()
+        return PairValue(car, cdr)

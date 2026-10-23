@@ -47,7 +47,7 @@ def _is_ident_prefix(s: str) -> bool:
     return s.isalpha() or s == "_"
 
 
-class _Src:
+class _Lexer:
     src: str
     cur: int
 
@@ -215,4 +215,4 @@ class _Src:
 
 
 def lex(input: str) -> list[Token]:
-    return _Src(input).lex()
+    return _Lexer(input).lex()
