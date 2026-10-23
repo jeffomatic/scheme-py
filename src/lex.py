@@ -81,6 +81,11 @@ class _Src:
                 toks.append(num)
                 continue
 
+            qs = self.consume_quote_string()
+            if qs:
+                toks.append(qs)
+                continue
+
             raise LexError()
 
         return toks
@@ -141,6 +146,9 @@ class _Src:
         return self.consume_positive_number()
 
     def consume_positive_number(self) -> NumberToken | None:
+        if not self.peek().isnumeric():
+            return None
+
         text = ""
 
         while not self.done():
@@ -169,6 +177,41 @@ class _Src:
             return None
 
         return NumberToken(float(text))
+
+    def consume_quote_string(self) -> QuoteStringToken | None:
+        text = ""
+        backquote = False
+
+        if not self.consume_char('"'):
+            return None
+
+        while not self.done():
+            c = self.peek()
+            if c == "\n" or c == "\r":
+                raise LexError()
+
+            if backquote:
+                backquote = False
+                text += c
+                self.next()
+                continue
+
+            if c == "\\":
+                backquote = True
+                self.next()
+                continue
+
+            if c == '"':
+                self.next()
+                break
+
+            text += c
+            self.next()
+
+        if len(text) < 1:
+            return None
+
+        return QuoteStringToken(text)
 
 
 def lex(input: str) -> list[Token]:

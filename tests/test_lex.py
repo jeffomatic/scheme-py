@@ -7,6 +7,7 @@ from lex import (
     IdentifierToken,
     NumberToken,
     OpenParenToken,
+    QuoteStringToken,
     Token,
     lex,
 )
@@ -26,6 +27,9 @@ from lex import (
         ("(-1)", [OpenParenToken(), NumberToken(-1), CloseParenToken()]),
         ("(3.1415)", [OpenParenToken(), NumberToken(3.1415), CloseParenToken()]),
         ("(-3.1415)", [OpenParenToken(), NumberToken(-3.1415), CloseParenToken()]),
+        ('("foo")', [OpenParenToken(), QuoteStringToken("foo"), CloseParenToken()]),
+        ('("\\foo")', [OpenParenToken(), QuoteStringToken("foo"), CloseParenToken()]),
+        ('("\\"foo")', [OpenParenToken(), QuoteStringToken('"foo'), CloseParenToken()]),
     ],
 )
 def test_lex(src: str, want: list[Token]):
