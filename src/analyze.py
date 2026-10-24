@@ -34,7 +34,13 @@ class DefineExpr:
     body: Expr
 
 
-Expr = ConstExpr | VarRefExpr | CallExpr | AndExpr | OrExpr | DefineExpr
+@dataclass
+class LambdaExpr:
+    params: list[str]
+    body: list[Expr]
+
+
+Expr = ConstExpr | VarRefExpr | CallExpr | AndExpr | OrExpr | DefineExpr | LambdaExpr
 
 
 class InvalidAnalyzeValueError(Exception):
@@ -67,6 +73,20 @@ def analyze_pair(pair: PairValue) -> Expr:
             match flatten_list(pair.cdr):
                 case SymbolValue(name), body_val:
                     return DefineExpr(name, analyze(body_val))
+                case _:
+                    raise InvalidAnalyzeValueError()
+        case SymbolValue("lambda"):
+            match flatten_list(pair.cdr):
+                case PairValue() as params_val, *body_vals:
+                    params: list[str] = []
+                    for pv in flatten_list(params_val):
+                        match pv:
+                            case SymbolValue(text):
+                                params.append(text)
+                            case _:
+                                raise InvalidAnalyzeValueError()
+
+                    return LambdaExpr(params, [analyze(v) for v in body_vals])
                 case _:
                     raise InvalidAnalyzeValueError()
         case (

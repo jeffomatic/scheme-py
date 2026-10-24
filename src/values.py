@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from analyze import Expr
     from env import Env
 
 
@@ -35,14 +36,19 @@ class PairValue:
 
 
 @dataclass
-class PrimitiveProcedureValue:
+class PrimitiveProcValue:
     name: str
 
 
-class ClosureProcedureValue:
+class ClosureProcValue:
     env: Env
     params: list[str]
-    body: list[Value]
+    body: list[Expr]
+
+    def __init__(self, env: Env, params: list[str], body: list[Expr]):
+        self.env = env
+        self.params = params
+        self.body = body
 
 
 # the unusable return value for statements like `define`
@@ -55,8 +61,8 @@ Value = (
     | NumberValue
     | EmptyListValue
     | PairValue
-    | PrimitiveProcedureValue
-    | ClosureProcedureValue
+    | PrimitiveProcValue
+    | ClosureProcValue
     | BoolValue
     | UnspecifiedValue
 )

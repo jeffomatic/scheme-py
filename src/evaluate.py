@@ -1,9 +1,26 @@
 from typing import assert_never
 
-from analyze import AndExpr, CallExpr, ConstExpr, DefineExpr, Expr, OrExpr, VarRefExpr
+from analyze import (
+    AndExpr,
+    CallExpr,
+    ConstExpr,
+    DefineExpr,
+    Expr,
+    LambdaExpr,
+    OrExpr,
+    VarRefExpr,
+)
 from env import Env
 from primitives import eval_primitive
-from values import BoolValue, PrimitiveProcedureValue, UnspecifiedValue, Value, truthy
+from values import (
+    ArityError,
+    BoolValue,
+    ClosureProcValue,
+    PrimitiveProcValue,
+    UnspecifiedValue,
+    Value,
+    truthy,
+)
 
 
 class InvalidOperatorError(Exception):
@@ -23,13 +40,17 @@ def evaluate(env: Env, expr: Expr) -> Value:
         case DefineExpr(name, body):
             env.bind(name, evaluate(env, body))
             return UnspecifiedValue()
+        case LambdaExpr(params, body):
+            return ClosureProcValue(env, params, body)
         case CallExpr(items):
             vals = [evaluate(env, i) for i in items]
             func = vals[0]
             args = vals[1:]
             match func:
-                case PrimitiveProcedureValue(primitive):
+                case PrimitiveProcValue(primitive):
                     return eval_primitive(primitive, args)
+                case ClosureProcValue() as closure:
+                    return eval_closure(closure, args)
                 case _:
                     raise InvalidOperatorError()
         case AndExpr(operands):
@@ -44,3 +65,18 @@ def evaluate(env: Env, expr: Expr) -> Value:
             return BoolValue(False)
         case _:
             assert_never(expr)
+
+
+def eval_closure(closure: ClosureProcValue, args: list[Value]) -> Value:
+    if len(closure.params) != len(args):
+        raise ArityError()
+
+    env = Env(closure.env)
+    for name, argval in zip(closure.params, args):
+        env.bind(name, argval)
+
+    ret: Value = UnspecifiedValue()
+    for expr in closure.body:
+        ret = evaluate(env, expr)
+
+    return ret

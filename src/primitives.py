@@ -1,7 +1,7 @@
 import math
 from collections.abc import Callable
 
-from values import ArityError, BoolValue, NumberValue, Value, ValueTypeError
+from values import ArityError, BoolValue, NumberValue, Value, ValueTypeError, truthy
 
 
 class UnknownPrimitiveError(Exception):
@@ -80,6 +80,14 @@ def eval_num_eq(args: list[Value]) -> Value:
             raise ArityError()
 
 
+def eval_not(args: list[Value]) -> Value:
+    match args:
+        case [v]:
+            return BoolValue(not truthy(v))
+        case _:
+            raise ArityError()
+
+
 PRIMITIVES: dict[str, Callable[[list[Value]], Value]] = {
     "+": eval_add,
     "-": eval_sub,
@@ -87,4 +95,5 @@ PRIMITIVES: dict[str, Callable[[list[Value]], Value]] = {
     "/": eval_div,
     ">": eval_gt,
     "=": eval_num_eq,
+    "not": eval_not,
 }

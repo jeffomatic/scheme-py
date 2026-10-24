@@ -1,18 +1,30 @@
 from analyze import analyze
-from default_env import make_default_env
+from builtin import BUILTIN_SRC
+from env import Env
 from evaluate import evaluate
 from lexer import Lexer
+from primitives import PRIMITIVES
 from reader import Reader
-from values import EmptyListValue, Value
+from values import EmptyListValue, PrimitiveProcValue, Value
+
+
+def make_default_env() -> Env:
+    env = Env()
+    for name in PRIMITIVES:
+        env.bind(name, PrimitiveProcValue(name))
+
+    evaluate_source(BUILTIN_SRC, env)
+
+    return env
 
 
 def read_source(src: str) -> list[Value]:
     return Reader(Lexer(src).lex()).read()
 
 
-def evaluate_source(src: str) -> Value:
+def evaluate_source(src: str, env: Env | None = None) -> Value:
     top_level = read_source(src)
-    env = make_default_env()
+    env = env or make_default_env()
 
     res = EmptyListValue()
     for v in top_level:
