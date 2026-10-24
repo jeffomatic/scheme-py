@@ -28,7 +28,13 @@ class OrExpr:
     operands: list[Expr]
 
 
-Expr = ConstExpr | VarRefExpr | CallExpr | AndExpr | OrExpr
+@dataclass
+class DefineExpr:
+    name: str
+    body: Expr
+
+
+Expr = ConstExpr | VarRefExpr | CallExpr | AndExpr | OrExpr | DefineExpr
 
 
 class InvalidAnalyzeValueError(Exception):
@@ -54,9 +60,15 @@ def analyze(expr_val: Value) -> Expr:
 def analyze_pair(pair: PairValue) -> Expr:
     match pair.car:
         case SymbolValue("and"):
-            return AndExpr(analyze_list(pair.cdr))
+            return AndExpr([analyze(item) for item in flatten_list(pair.cdr)])
         case SymbolValue("or"):
-            return OrExpr(analyze_list(pair.cdr))
+            return OrExpr([analyze(item) for item in flatten_list(pair.cdr)])
+        case SymbolValue("define"):
+            match flatten_list(pair.cdr):
+                case SymbolValue(name), body_val:
+                    return DefineExpr(name, analyze(body_val))
+                case _:
+                    raise InvalidAnalyzeValueError()
         case (
             SymbolValue("lambda")
             | SymbolValue("define")
@@ -73,12 +85,34 @@ def analyze_pair(pair: PairValue) -> Expr:
             return CallExpr(analyze_list(pair))
 
 
+def flatten_list(list_val: Value) -> list[Value]:
+    if not isinstance(list_val, PairValue):
+        raise InvalidAnalyzeValueError()
+
+    cur = list_val
+    items: list[Value] = []
+
+    while True:
+        items.append(cur.car)
+        match cur.cdr:
+            case PairValue():
+                cur = cur.cdr
+                continue
+            case EmptyListValue():
+                break
+            case _:
+                raise InvalidAnalyzeValueError()
+
+    return items
+
+
 def analyze_list(list_val: Value) -> list[Expr]:
     """
     Assuming list_val represents a properly-structured Scheme list, performs
     separate analysis of each item in the list and returns a host-language list
     of the resulting expressions.
     """
+
     if not isinstance(list_val, PairValue):
         raise InvalidAnalyzeValueError()
 

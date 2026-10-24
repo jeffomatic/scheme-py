@@ -45,6 +45,9 @@ from values import BoolValue, EmptyListValue, NumberValue, Value
         ("(or (> 1 0) (> 1 2))", BoolValue(True)),
         ("(or (> 1 2) (> 1 0))", BoolValue(True)),
         ("(or (> 1 2) (> 1 3))", BoolValue(False)),
+        ("(define foo 1) foo", NumberValue(1)),
+        ("(define foo 1) (define bar (> foo 0)) bar", BoolValue(True)),
+        ("(define foo 1) (define bar (> foo 2)) bar", BoolValue(False)),
     ],
 )
 def test_eval(src: str, want: Value):

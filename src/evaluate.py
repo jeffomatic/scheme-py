@@ -1,9 +1,9 @@
 from typing import assert_never
 
-from analyze import AndExpr, CallExpr, ConstExpr, Expr, OrExpr, VarRefExpr
+from analyze import AndExpr, CallExpr, ConstExpr, DefineExpr, Expr, OrExpr, VarRefExpr
 from env import Env
 from primitives import eval_primitive
-from values import BoolValue, PrimitiveProcedureValue, Value, truthy
+from values import BoolValue, PrimitiveProcedureValue, UnspecifiedValue, Value, truthy
 
 
 class InvalidOperatorError(Exception):
@@ -20,6 +20,9 @@ def evaluate(env: Env, expr: Expr) -> Value:
             return val
         case VarRefExpr(name):
             return env.resolve(name)
+        case DefineExpr(name, body):
+            env.bind(name, evaluate(env, body))
+            return UnspecifiedValue()
         case CallExpr(items):
             vals = [evaluate(env, i) for i in items]
             func = vals[0]

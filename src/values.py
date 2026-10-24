@@ -45,11 +45,8 @@ class ClosureProcedureValue:
     body: list[Value]
 
 
-class ArityError(Exception):
-    pass
-
-
-class ValueTypeError(Exception):
+# the unusable return value for statements like `define`
+class UnspecifiedValue:
     pass
 
 
@@ -61,7 +58,16 @@ Value = (
     | PrimitiveProcedureValue
     | ClosureProcedureValue
     | BoolValue
+    | UnspecifiedValue
 )
+
+
+class ArityError(Exception):
+    pass
+
+
+class ValueTypeError(Exception):
+    pass
 
 
 def truthy(val: Value) -> bool:
