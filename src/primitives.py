@@ -1,4 +1,5 @@
 import math
+from collections.abc import Callable
 
 from values import ArityError, NumberValue, Value, ValueTypeError
 
@@ -8,17 +9,9 @@ class UnknownPrimitiveError(Exception):
 
 
 def eval_primitive(name: str, args: list[Value]) -> Value:
-    match name:
-        case "+":
-            return eval_add(args)
-        case "-":
-            return eval_sub(args)
-        case "*":
-            return eval_mul(args)
-        case "/":
-            return eval_div(args)
-        case _:
-            raise UnknownPrimitiveError()
+    if (f := PRIMITIVES.get(name)) is not None:
+        return f(args)
+    raise UnknownPrimitiveError()
 
 
 def unwrap_number(v: Value) -> float:
@@ -65,3 +58,11 @@ def eval_div(args: list[Value]) -> Value:
         accum /= unwrap_number(v)
 
     return NumberValue(accum)
+
+
+PRIMITIVES: dict[str, Callable[[list[Value]], Value]] = {
+    "+": eval_add,
+    "-": eval_sub,
+    "*": eval_mul,
+    "/": eval_div,
+}
