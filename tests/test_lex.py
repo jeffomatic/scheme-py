@@ -30,6 +30,7 @@ from lex import (
         ('("foo")', [OpenParenToken(), QuoteStringToken("foo"), CloseParenToken()]),
         ('("\\foo")', [OpenParenToken(), QuoteStringToken("foo"), CloseParenToken()]),
         ('("\\"foo")', [OpenParenToken(), QuoteStringToken('"foo'), CloseParenToken()]),
+        ('""', [QuoteStringToken("")]),
     ],
 )
 def test_lex(src: str, want: list[Token]):

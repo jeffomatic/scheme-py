@@ -168,7 +168,11 @@ class _Lexer:
         if not self.consume_char('"'):
             return None
 
-        while not self.done():
+        while True:
+            if self.done():
+                # no closing quote
+                raise LexError()
+
             c = self.peek()
             if c in "\n\r":
                 raise LexError()
@@ -186,15 +190,10 @@ class _Lexer:
 
             if c == '"':
                 self.next()
-                break
+                return QuoteStringToken(text)
 
             text += c
             self.next()
-
-        if not text:
-            return None
-
-        return QuoteStringToken(text)
 
 
 def lex(src: str) -> list[Token]:
