@@ -60,6 +60,6 @@ from values import EmptyListValue, NumberValue, PairValue, SymbolValue, Value
         ),
     ],
 )
-def test_read(src: str, want: Value):
+def test_read(src: str, want: list[Value]):
     got = read(src)
     assert got == want

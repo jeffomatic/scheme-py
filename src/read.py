@@ -14,10 +14,10 @@ class ReadError(Exception):
 
 
 def read(src: str) -> list[Value]:
-    return Reader(lex(src)).read()
+    return _Reader(lex(src)).read()
 
 
-class Reader:
+class _Reader:
     toks: list[Token]
     cur: int
 

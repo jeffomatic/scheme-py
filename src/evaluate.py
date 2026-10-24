@@ -12,40 +12,34 @@ class InvalidOperatorError(Exception):
     pass
 
 
-class MalformedProcedureCall(Exception):
+class MalformedProcedureCallError(Exception):
     pass
 
 
-def evaluate(env: Env, v: Value) -> Value:
-    match v:
+def evaluate(env: Env, expr: Value) -> Value:
+    match expr:
         case EmptyListValue() | NumberValue():
-            return v
+            return expr
         case SymbolValue(text):
             return env.resolve(text)
-        case PairValue(car, cdr):
-            match car:
-                case SymbolValue(car):
-                    match car:
-                        case "lambda":
-                            raise NotImplementedError()
-                        case "define":
-                            raise NotImplementedError()
-                        case _:
-                            return eval_procedure(car, env, cdr)
-
-                case _:
-                    raise InvalidOperatorError()
-
+        case PairValue(SymbolValue("lambda"), _):
+            raise NotImplementedError()
+        case PairValue(SymbolValue("define"), _):
+            raise NotImplementedError()
+        case PairValue(SymbolValue(name), cdr):
+            return eval_procedure(env, name, cdr)
+        case PairValue():
+            raise InvalidOperatorError()
         case _:
             raise UnknownValueTypeError()
 
 
-def eval_procedure(name: str, env: Env, arg_list: Value) -> Value:
+def eval_procedure(env: Env, name: str, arg_list: Value) -> Value:
     proc = env.resolve(name)
     args = eval_arg_list(env, arg_list)
     match proc:
-        case PrimitiveProcedureValue(id):
-            return eval_primitive(id, args)
+        case PrimitiveProcedureValue(primitive):
+            return eval_primitive(primitive, args)
         case ClosureProcedureValue():
             return eval_closure(proc, args)
         case _:
@@ -53,13 +47,18 @@ def eval_procedure(name: str, env: Env, arg_list: Value) -> Value:
 
 
 def eval_arg_list(env: Env, arg_list: Value) -> list[Value]:
-    match arg_list:
-        case EmptyListValue():
-            return []
-        case PairValue(car, cdr):
-            return [evaluate(env, car)] + eval_arg_list(env, cdr)
-        case _:
-            raise MalformedProcedureCall()
+    args: list[Value] = []
+    while True:
+        match arg_list:
+            case EmptyListValue():
+                break
+            case PairValue(car, cdr):
+                args.append(evaluate(env, car))
+                arg_list = cdr
+            case _:
+                raise MalformedProcedureCallError()
+
+    return args
 
 
 def eval_closure(closure: ClosureProcedureValue, args: list[Value]) -> Value:
@@ -67,8 +66,8 @@ def eval_closure(closure: ClosureProcedureValue, args: list[Value]) -> Value:
         raise ArityError()
 
     eval_env = Env(closure.env)
-    for i, name in enumerate(closure.params):
-        eval_env.bind(name, args[i])
+    for k, v in zip(closure.params, args, strict=True):
+        eval_env.bind(k, v)
 
     ret = EmptyListValue()
     for v in closure.body:

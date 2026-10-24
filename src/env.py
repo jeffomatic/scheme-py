@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from values import Value
 
 
@@ -7,23 +5,22 @@ class UnknownBindingError(Exception):
     pass
 
 
-@dataclass
 class Env:
-    values: dict[str, Value]
     parent: Env | None
+    values: dict[str, Value]
 
     def __init__(self, parent: Env | None = None):
-        self.values = {}
         self.parent = parent
+        self.values = {}
 
     def bind(self, k: str, v: Value):
         self.values[k] = v
 
     def resolve(self, k: str) -> Value:
-        if not k in self.values:
-            if self.parent is None:
-                raise UnknownBindingError()
+        if k in self.values:
+            return self.values[k]
 
-            return self.parent.resolve(k)
+        if self.parent is None:
+            raise UnknownBindingError()
 
-        return self.values[k]
+        return self.parent.resolve(k)

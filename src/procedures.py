@@ -14,10 +14,9 @@ class ProcedureValue(Value):
 
 @dataclass
 class PrimitiveProcedureValue(ProcedureValue):
-    id: str
+    name: str
 
 
-@dataclass
 class ClosureProcedureValue(ProcedureValue):
     env: Env
     params: list[str]
@@ -28,5 +27,5 @@ class ArityError(Exception):
     pass
 
 
-class TypeError(Exception):
+class ValueTypeError(Exception):
     pass

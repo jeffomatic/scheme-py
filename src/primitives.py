@@ -1,4 +1,6 @@
-from procedures import ArityError, TypeError
+import math
+
+from procedures import ArityError, ValueTypeError
 from values import NumberValue, Value
 
 
@@ -6,8 +8,8 @@ class UnknownPrimitiveError(Exception):
     pass
 
 
-def eval_primitive(id: str, args: list[Value]) -> Value:
-    match id:
+def eval_primitive(name: str, args: list[Value]) -> Value:
+    match name:
         case "+":
             return eval_add(args)
         case "-":
@@ -25,15 +27,11 @@ def unwrap_number(v: Value) -> float:
         case NumberValue(n):
             return n
         case _:
-            raise TypeError()
+            raise ValueTypeError()
 
 
 def eval_add(args: list[Value]) -> Value:
-    accum = 0
-    for v in args:
-        accum += unwrap_number(v)
-
-    return NumberValue(accum)
+    return NumberValue(sum(unwrap_number(v) for v in args))
 
 
 def eval_sub(args: list[Value]) -> Value:
@@ -42,21 +40,17 @@ def eval_sub(args: list[Value]) -> Value:
 
     if len(args) == 1:
         # special case: negation
-        return NumberValue(-1 * unwrap_number(args[0]))
+        return NumberValue(-unwrap_number(args[0]))
 
     accum = unwrap_number(args[0])
-    for n in args[1:]:
-        accum -= unwrap_number(n)
+    for v in args[1:]:
+        accum -= unwrap_number(v)
 
     return NumberValue(accum)
 
 
 def eval_mul(args: list[Value]) -> Value:
-    accum = 1
-    for v in args:
-        accum *= unwrap_number(v)
-
-    return NumberValue(accum)
+    return NumberValue(math.prod(unwrap_number(v) for v in args))
 
 
 def eval_div(args: list[Value]) -> Value:
@@ -68,7 +62,7 @@ def eval_div(args: list[Value]) -> Value:
         return NumberValue(1 / unwrap_number(args[0]))
 
     accum = unwrap_number(args[0])
-    for n in args[1:]:
-        accum /= unwrap_number(n)
+    for v in args[1:]:
+        accum /= unwrap_number(v)
 
     return NumberValue(accum)

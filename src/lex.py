@@ -48,7 +48,7 @@ class _Lexer:
         self.cur = 0
 
     def lex(self) -> list[Token]:
-        toks = []
+        toks: list[Token] = []
 
         while not self.done():
             if self.peek().isspace():
@@ -63,18 +63,15 @@ class _Lexer:
                 toks.append(CloseParenToken())
                 continue
 
-            num = self.consume_number()
-            if num:
+            if (num := self.consume_number()) is not None:
                 toks.append(num)
                 continue
 
-            qs = self.consume_quote_string()
-            if qs:
+            if (qs := self.consume_quote_string()) is not None:
                 toks.append(qs)
                 continue
 
-            ident = self.consume_ident()
-            if ident:
+            if (ident := self.consume_ident()) is not None:
                 toks.append(ident)
                 continue
 
@@ -86,17 +83,17 @@ class _Lexer:
         assert not self.done()
         return self.src[self.cur]
 
-    def next(self):
+    def next(self) -> None:
         if self.done():
             return
         self.cur += 1
 
-    def prev(self):
+    def prev(self) -> None:
         if self.cur < 1:
             return
         self.cur -= 1
 
-    def done(self):
+    def done(self) -> bool:
         return self.cur >= len(self.src)
 
     def consume_char(self, char: str) -> bool:
@@ -116,7 +113,7 @@ class _Lexer:
             text += c
             self.next()
 
-        if len(text) < 1:
+        if not text:
             raise LexError()
 
         return IdentifierToken(text)
@@ -124,7 +121,7 @@ class _Lexer:
     def consume_number(self) -> NumberToken | None:
         if self.consume_char("-"):
             num = self.consume_positive_number()
-            if num == None:
+            if num is None:
                 self.prev()  # unconsume '-' character
                 return None
             return NumberToken(-num.value)
@@ -132,7 +129,7 @@ class _Lexer:
         return self.consume_positive_number()
 
     def consume_positive_number(self) -> NumberToken | None:
-        if not self.peek().isnumeric():
+        if not self.peek() in "0123456789":
             return None
 
         text = ""
@@ -142,7 +139,7 @@ class _Lexer:
             if c == ")" or c.isspace():
                 break
 
-            if c.isnumeric():
+            if c in "0123456789":
                 text += c
                 self.next()
                 continue
@@ -159,31 +156,31 @@ class _Lexer:
 
             raise LexError()
 
-        if len(text) < 1:
+        if not text:
             return None
 
         return NumberToken(float(text))
 
     def consume_quote_string(self) -> QuoteStringToken | None:
         text = ""
-        backquote = False
+        escape = False
 
         if not self.consume_char('"'):
             return None
 
         while not self.done():
             c = self.peek()
-            if c == "\n" or c == "\r":
+            if c in "\n\r":
                 raise LexError()
 
-            if backquote:
-                backquote = False
+            if escape:
+                escape = False
                 text += c
                 self.next()
                 continue
 
             if c == "\\":
-                backquote = True
+                escape = True
                 self.next()
                 continue
 
@@ -194,11 +191,11 @@ class _Lexer:
             text += c
             self.next()
 
-        if len(text) < 1:
+        if not text:
             return None
 
         return QuoteStringToken(text)
 
 
-def lex(input: str) -> list[Token]:
-    return _Lexer(input).lex()
+def lex(src: str) -> list[Token]:
+    return _Lexer(src).lex()
