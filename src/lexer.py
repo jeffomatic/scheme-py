@@ -1,38 +1,44 @@
 from dataclasses import dataclass
 
 
-class Token:
-    pass
-
-
 @dataclass
-class IdentifierToken(Token):
+class IdentifierToken:
     text: str
 
 
 @dataclass
-class OpenParenToken(Token):
+class OpenParenToken:
     pass
 
 
 @dataclass
-class CloseParenToken(Token):
+class CloseParenToken:
     pass
 
 
 @dataclass
-class QuoteStringToken(Token):
+class QuoteStringToken:
     text: str
 
 
 @dataclass
-class NumberToken(Token):
+class NumberToken:
     value: float
 
 
 @dataclass
-class BooleanToken(Token):
+class BooleanToken:
     value: bool
+
+
+Token = (
+    IdentifierToken
+    | OpenParenToken
+    | CloseParenToken
+    | QuoteStringToken
+    | NumberToken
+    | BooleanToken
+)
 
 
 class LexError(Exception):

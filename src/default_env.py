@@ -1,5 +1,5 @@
 from env import Env
-from procedures import PrimitiveProcedureValue
+from values import PrimitiveProcedureValue
 
 
 def make_default_env() -> Env:

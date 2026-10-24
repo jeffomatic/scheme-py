@@ -1,3 +1,4 @@
+from analyze import analyze
 from default_env import make_default_env
 from evaluate import evaluate
 from lexer import Lexer
@@ -15,6 +16,6 @@ def evaluate_source(src: str) -> Value:
 
     res = EmptyListValue()
     for v in top_level:
-        res = evaluate(env, v)
+        res = evaluate(env, analyze(v))
 
     return res

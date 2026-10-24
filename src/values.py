@@ -1,22 +1,22 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-
-class Value:
-    pass
+if TYPE_CHECKING:
+    from env import Env
 
 
 @dataclass
-class SymbolValue(Value):
+class SymbolValue:
     text: str
 
 
 @dataclass
-class NumberValue(Value):
+class NumberValue:
     val: float
 
 
 @dataclass
-class EmptyListValue(Value):
+class EmptyListValue:
     pass
 
 
@@ -24,6 +24,35 @@ class EmptyListValue(Value):
 # - interpreter tests will probably do structural equivalence in some cases
 # - other cases will require reference equality
 @dataclass
-class PairValue(Value):
+class PairValue:
     car: Value
     cdr: Value
+
+
+@dataclass
+class PrimitiveProcedureValue:
+    name: str
+
+
+class ClosureProcedureValue:
+    env: Env
+    params: list[str]
+    body: list[Value]
+
+
+class ArityError(Exception):
+    pass
+
+
+class ValueTypeError(Exception):
+    pass
+
+
+Value = (
+    SymbolValue
+    | NumberValue
+    | EmptyListValue
+    | PairValue
+    | PrimitiveProcedureValue
+    | ClosureProcedureValue
+)

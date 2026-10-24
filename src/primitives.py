@@ -1,7 +1,6 @@
 import math
 
-from procedures import ArityError, ValueTypeError
-from values import NumberValue, Value
+from values import ArityError, NumberValue, Value, ValueTypeError
 
 
 class UnknownPrimitiveError(Exception):
