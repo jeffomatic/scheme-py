@@ -39,14 +39,6 @@ class LexError(Exception):
     pass
 
 
-def _is_ident_char(s: str) -> bool:
-    return s.isalnum() or s == "_"
-
-
-def _is_ident_prefix(s: str) -> bool:
-    return s.isalpha() or s == "_"
-
-
 class _Lexer:
     src: str
     cur: int
@@ -71,11 +63,6 @@ class _Lexer:
                 toks.append(CloseParenToken())
                 continue
 
-            ident = self.consume_ident()
-            if ident:
-                toks.append(ident)
-                continue
-
             num = self.consume_number()
             if num:
                 toks.append(num)
@@ -84,6 +71,11 @@ class _Lexer:
             qs = self.consume_quote_string()
             if qs:
                 toks.append(qs)
+                continue
+
+            ident = self.consume_ident()
+            if ident:
+                toks.append(ident)
                 continue
 
             raise LexError()
@@ -114,18 +106,12 @@ class _Lexer:
         return False
 
     def consume_ident(self) -> IdentifierToken | None:
-        if not _is_ident_prefix(self.peek()):
-            return None
-
         text = ""
 
         while not self.done():
             c = self.peek()
             if c.isspace() or c == ")":
                 break
-
-            if not _is_ident_char(c):
-                raise LexError(Exception)
 
             text += c
             self.next()
