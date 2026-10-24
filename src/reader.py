@@ -1,10 +1,9 @@
-from lex import (
+from lexer import (
     CloseParenToken,
     IdentifierToken,
     NumberToken,
     OpenParenToken,
     Token,
-    lex,
 )
 from values import EmptyListValue, NumberValue, PairValue, SymbolValue, Value
 
@@ -13,11 +12,7 @@ class ReadError(Exception):
     pass
 
 
-def read(src: str) -> list[Value]:
-    return _Reader(lex(src)).read()
-
-
-class _Reader:
+class Reader:
     toks: list[Token]
     cur: int
 

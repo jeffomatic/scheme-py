@@ -39,7 +39,7 @@ class LexError(Exception):
     pass
 
 
-class _Lexer:
+class Lexer:
     src: str
     cur: int
 
@@ -194,7 +194,3 @@ class _Lexer:
 
             text += c
             self.next()
-
-
-def lex(src: str) -> list[Token]:
-    return _Lexer(src).lex()

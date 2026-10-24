@@ -2,14 +2,14 @@
 
 import pytest
 
-from lex import (
+from lexer import (
     CloseParenToken,
     IdentifierToken,
+    Lexer,
     NumberToken,
     OpenParenToken,
     QuoteStringToken,
     Token,
-    lex,
 )
 
 
@@ -33,6 +33,6 @@ from lex import (
         ('""', [QuoteStringToken("")]),
     ],
 )
-def test_lex(src: str, want: list[Token]):
-    got = lex(src)
+def test_lexer(src: str, want: list[Token]):
+    got = Lexer(src).lex()
     assert got == want

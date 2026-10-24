@@ -2,15 +2,15 @@
 
 import pytest
 
-from evaluate_src import evaluate_src
+from source import evaluate_source
 from values import EmptyListValue, NumberValue, Value
 
 
 @pytest.mark.parametrize(
     "src, want",
     [
-        # ("", EmptyListValue()),
-        # ("(+)", NumberValue(0)),
+        ("", EmptyListValue()),
+        ("(+)", NumberValue(0)),
         ("(+ 3)", NumberValue(3)),
         ("(+ 3 0.1415)", NumberValue(3.1415)),
         ("(- 0)", NumberValue(0)),
@@ -29,5 +29,5 @@ from values import EmptyListValue, NumberValue, Value
     ],
 )
 def test_eval(src: str, want: Value):
-    got = evaluate_src(src)
+    got = evaluate_source(src)
     assert got == want

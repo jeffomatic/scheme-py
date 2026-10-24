@@ -2,7 +2,8 @@
 
 import pytest
 
-from read import read
+from lexer import Lexer
+from reader import Reader
 from values import EmptyListValue, NumberValue, PairValue, SymbolValue, Value
 
 
@@ -60,6 +61,6 @@ from values import EmptyListValue, NumberValue, PairValue, SymbolValue, Value
         ),
     ],
 )
-def test_read(src: str, want: list[Value]):
-    got = read(src)
+def test_reader(src: str, want: list[Value]):
+    got = Reader(Lexer(src).lex()).read()
     assert got == want
