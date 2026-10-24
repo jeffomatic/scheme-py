@@ -3,6 +3,7 @@
 import pytest
 
 from lexer import (
+    BoolToken,
     CloseParenToken,
     IdentifierToken,
     Lexer,
@@ -31,6 +32,10 @@ from lexer import (
         ('("\\foo")', [OpenParenToken(), QuoteStringToken("foo"), CloseParenToken()]),
         ('("\\"foo")', [OpenParenToken(), QuoteStringToken('"foo'), CloseParenToken()]),
         ('""', [QuoteStringToken("")]),
+        ("#t", [BoolToken(True)]),
+        ("#true", [BoolToken(True)]),
+        ("#f", [BoolToken(False)]),
+        ("#false", [BoolToken(False)]),
     ],
 )
 def test_lexer(src: str, want: list[Token]):

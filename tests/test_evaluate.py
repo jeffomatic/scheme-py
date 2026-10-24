@@ -3,7 +3,7 @@
 import pytest
 
 from source import evaluate_source
-from values import EmptyListValue, NumberValue, Value
+from values import BoolValue, EmptyListValue, NumberValue, Value
 
 
 @pytest.mark.parametrize(
@@ -26,6 +26,25 @@ from values import EmptyListValue, NumberValue, Value
         ("(/ 30 5)", NumberValue(6)),
         ("(/ 30 5 3)", NumberValue(2)),
         ("(+ (/ 4 2) (* 5 (- 2)))", NumberValue(-8)),
+        ("(= 1 1)", BoolValue(True)),
+        ("(= 1 2)", BoolValue(False)),
+        ("(> 1 0)", BoolValue(True)),
+        ("(> 1 1)", BoolValue(False)),
+        ("(> 1 2)", BoolValue(False)),
+        ("(and 1)", BoolValue(True)),
+        ("(and #f)", BoolValue(False)),
+        ("(and (> 1 0))", BoolValue(True)),
+        ("(and (> 1 0) (> 1 -1))", BoolValue(True)),
+        ("(and (> 1 0) (> 1 2))", BoolValue(False)),
+        ("(and (> 1 2) (> 1 0))", BoolValue(False)),
+        ("(or 1)", BoolValue(True)),
+        ("(or #f)", BoolValue(False)),
+        ("(or (> 1 0))", BoolValue(True)),
+        ("(or (> 0 1))", BoolValue(False)),
+        ("(or (> 1 0) (> 1 -1))", BoolValue(True)),
+        ("(or (> 1 0) (> 1 2))", BoolValue(True)),
+        ("(or (> 1 2) (> 1 0))", BoolValue(True)),
+        ("(or (> 1 2) (> 1 3))", BoolValue(False)),
     ],
 )
 def test_eval(src: str, want: Value):

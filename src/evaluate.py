@@ -1,16 +1,9 @@
 from typing import assert_never
 
-from analyze import CallExpr, ConstExpr, Expr, VarRefExpr
+from analyze import AndExpr, CallExpr, ConstExpr, Expr, OrExpr, VarRefExpr
 from env import Env
 from primitives import eval_primitive
-from values import (
-    PrimitiveProcedureValue,
-    Value,
-)
-
-
-class UnknownValueTypeError(Exception):
-    pass
+from values import BoolValue, PrimitiveProcedureValue, Value, truthy
 
 
 class InvalidOperatorError(Exception):
@@ -36,5 +29,15 @@ def evaluate(env: Env, expr: Expr) -> Value:
                     return eval_primitive(primitive, args)
                 case _:
                     raise InvalidOperatorError()
+        case AndExpr(operands):
+            for o in operands:
+                if not truthy(evaluate(env, o)):
+                    return BoolValue(False)
+            return BoolValue(True)
+        case OrExpr(operands):
+            for o in operands:
+                if truthy(evaluate(env, o)):
+                    return BoolValue(True)
+            return BoolValue(False)
         case _:
             assert_never(expr)

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from values import EmptyListValue, NumberValue, PairValue, SymbolValue, Value
+from values import BoolValue, EmptyListValue, NumberValue, PairValue, SymbolValue, Value
 
 
 @dataclass
@@ -18,7 +18,17 @@ class CallExpr:
     items: list[Expr]
 
 
-Expr = ConstExpr | VarRefExpr | CallExpr
+@dataclass
+class AndExpr:
+    operands: list[Expr]
+
+
+@dataclass
+class OrExpr:
+    operands: list[Expr]
+
+
+Expr = ConstExpr | VarRefExpr | CallExpr | AndExpr | OrExpr
 
 
 class InvalidAnalyzeValueError(Exception):
@@ -31,7 +41,7 @@ class InvalidCallExpression(Exception):
 
 def analyze(expr_val: Value) -> Expr:
     match expr_val:
-        case EmptyListValue() | NumberValue():
+        case EmptyListValue() | NumberValue() | BoolValue():
             return ConstExpr(expr_val)
         case SymbolValue(text):
             return VarRefExpr(text)
@@ -43,6 +53,10 @@ def analyze(expr_val: Value) -> Expr:
 
 def analyze_pair(pair: PairValue) -> Expr:
     match pair.car:
+        case SymbolValue("and"):
+            return AndExpr(analyze_list(pair.cdr))
+        case SymbolValue("or"):
+            return OrExpr(analyze_list(pair.cdr))
         case (
             SymbolValue("lambda")
             | SymbolValue("define")
@@ -51,22 +65,23 @@ def analyze_pair(pair: PairValue) -> Expr:
             | SymbolValue("set!")
             | SymbolValue("quote")
             | SymbolValue("cond")
-            | SymbolValue("and")
-            | SymbolValue("or")
             | SymbolValue("begin")
         ):
-            # special forms
+            # unimplemented special forms
             raise NotImplementedError()
         case _:
             return CallExpr(analyze_list(pair))
 
 
-def analyze_list(list_val: PairValue) -> list[Expr]:
+def analyze_list(list_val: Value) -> list[Expr]:
     """
     Assuming list_val represents a properly-structured Scheme list, performs
     separate analysis of each item in the list and returns a host-language list
     of the resulting expressions.
     """
+    if not isinstance(list_val, PairValue):
+        raise InvalidAnalyzeValueError()
+
     match list_val.cdr:
         case EmptyListValue():
             return [analyze(list_val.car)]

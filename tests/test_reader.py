@@ -4,7 +4,7 @@ import pytest
 
 from lexer import Lexer
 from reader import Reader
-from values import EmptyListValue, NumberValue, PairValue, SymbolValue, Value
+from values import BoolValue, EmptyListValue, NumberValue, PairValue, SymbolValue, Value
 
 
 @pytest.mark.parametrize(
@@ -18,6 +18,10 @@ from values import EmptyListValue, NumberValue, PairValue, SymbolValue, Value
         ),
         ("(1234.5678)", [PairValue(NumberValue(1234.5678), EmptyListValue())]),
         ("(foo)", [PairValue(SymbolValue("foo"), EmptyListValue())]),
+        ("#t", [BoolValue(True)]),
+        ("#true", [BoolValue(True)]),
+        ("#f", [BoolValue(False)]),
+        ("#false", [BoolValue(False)]),
         (
             "((foo))",
             [

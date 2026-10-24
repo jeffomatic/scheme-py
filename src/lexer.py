@@ -27,7 +27,7 @@ class NumberToken:
 
 
 @dataclass
-class BooleanToken:
+class BoolToken:
     value: bool
 
 
@@ -37,7 +37,7 @@ Token = (
     | CloseParenToken
     | QuoteStringToken
     | NumberToken
-    | BooleanToken
+    | BoolToken
 )
 
 
@@ -78,7 +78,13 @@ class Lexer:
                 continue
 
             if (ident := self.consume_ident()) is not None:
-                toks.append(ident)
+                match ident.text:
+                    case "#t" | "#true":
+                        toks.append(BoolToken(True))
+                    case "#f" | "#false":
+                        toks.append(BoolToken(False))
+                    case _:
+                        toks.append(ident)
                 continue
 
             raise LexError()

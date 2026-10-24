@@ -1,11 +1,12 @@
 from lexer import (
+    BoolToken,
     CloseParenToken,
     IdentifierToken,
     NumberToken,
     OpenParenToken,
     Token,
 )
-from values import EmptyListValue, NumberValue, PairValue, SymbolValue, Value
+from values import BoolValue, EmptyListValue, NumberValue, PairValue, SymbolValue, Value
 
 
 class ReadError(Exception):
@@ -37,6 +38,8 @@ class Reader:
                 return NumberValue(val)
             case IdentifierToken(text):
                 return SymbolValue(text)
+            case BoolToken(val):
+                return BoolValue(val)
             case _:
                 raise ReadError()
 

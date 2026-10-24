@@ -16,6 +16,11 @@ class NumberValue:
 
 
 @dataclass
+class BoolValue:
+    val: bool
+
+
+@dataclass
 class EmptyListValue:
     pass
 
@@ -55,4 +60,13 @@ Value = (
     | PairValue
     | PrimitiveProcedureValue
     | ClosureProcedureValue
+    | BoolValue
 )
+
+
+def truthy(val: Value) -> bool:
+    match val:
+        case BoolValue(False):
+            return False
+        case _:
+            return True
