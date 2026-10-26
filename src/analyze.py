@@ -107,27 +107,17 @@ def must_symbol(v: Value) -> str:
 
 def flatten_list(datum: Value) -> list[Value]:
     """
-    Assuming list_val represents a properly-structured Scheme list, flatten
-    the linked list structure into a Python list of value objects.
+    Assuming datum represents a properly-structured Scheme list, flatten the
+    linked list structure into a Python list of value objects.
     """
-    match datum:
-        case EmptyListValue():
-            return []
-        case PairValue():
-            cur = datum
-            items: list[Value] = []
-
-            while True:
-                items.append(cur.car)
-                match cur.cdr:
-                    case PairValue():
-                        cur = cur.cdr
-                        continue
-                    case EmptyListValue():
-                        break
-                    case _:
-                        raise InvalidDatumError()
-
-            return items
-        case _:
-            raise InvalidDatumError()
+    ret: list[Value] = []
+    cur = datum
+    while True:
+        match cur:
+            case EmptyListValue():
+                return ret
+            case PairValue(car, cdr):
+                ret.append(car)
+                cur = cdr
+            case _:
+                raise InvalidDatumError("malformed list")

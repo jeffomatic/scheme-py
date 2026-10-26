@@ -87,8 +87,7 @@ def eval_closure(closure: ClosureProcValue, args: list[Value]) -> Value:
     for name, argval in zip(closure.params, args):
         env.bind(name, argval)
 
-    ret: Value = UnspecifiedValue()
-    for expr in closure.body:
-        ret = evaluate(env, expr)
+    for expr in closure.body[:-1]:
+        evaluate(env, expr)
 
-    return ret
+    return evaluate(env, closure.body[-1])
