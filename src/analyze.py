@@ -24,36 +24,36 @@ def analyze(expr_val: Value) -> Expr:
         case SymbolValue(text):
             return VarRefExpr(text)
         case PairValue(car, cdr):
-            args = flatten_list(cdr)
+            rest = flatten_list(cdr)
             match car:
                 case SymbolValue("and"):
-                    return AndExpr([analyze(v) for v in args])
+                    return AndExpr([analyze(v) for v in rest])
                 case SymbolValue("or"):
-                    return OrExpr([analyze(v) for v in args])
+                    return OrExpr([analyze(v) for v in rest])
                 case SymbolValue("define"):
-                    return analyze_define(args)
+                    return analyze_define(rest)
                 case SymbolValue("lambda"):
-                    return analyze_lambda(args)
+                    return analyze_lambda(rest)
                 case SymbolValue("if"):
-                    return analyze_if(args)
+                    return analyze_if(rest)
                 case SymbolValue("let"):
-                    return analyze_let(args)
+                    return analyze_let(rest)
                 case _:
-                    return CallExpr(analyze(car), [analyze(v) for v in args])
+                    return CallExpr(analyze(car), [analyze(v) for v in rest])
         case _:
             raise InvalidDatumError()
 
 
-def analyze_define(args: list[Value]) -> DefineExpr:
-    match args:
+def analyze_define(datums: list[Value]) -> DefineExpr:
+    match datums:
         case SymbolValue(name), body_val:
             return DefineExpr(name, analyze(body_val))
         case _:
             raise SyntaxError("invalid define syntax")
 
 
-def analyze_lambda(args: list[Value]) -> LambdaExpr:
-    match args:
+def analyze_lambda(datums: list[Value]) -> LambdaExpr:
+    match datums:
         case PairValue() as params_val, *body_vals:
             params: list[str] = []
             for pv in flatten_list(params_val):
@@ -68,16 +68,16 @@ def analyze_lambda(args: list[Value]) -> LambdaExpr:
             raise SyntaxError("invalid lambda syntax")
 
 
-def analyze_if(args: list[Value]) -> IfExpr:
-    match args:
+def analyze_if(datums: list[Value]) -> IfExpr:
+    match datums:
         case [pred_val, then_val, else_val]:
             return IfExpr(analyze(pred_val), analyze(then_val), analyze(else_val))
         case _:
             raise SyntaxError("invalid if syntax")
 
 
-def analyze_let(args: list[Value]) -> CallExpr:
-    match args:
+def analyze_let(datums: list[Value]) -> CallExpr:
+    match datums:
         case [decls_val, *body_vals]:
             decl_names: list[str] = []
             decl_bodies: list[Expr] = []
@@ -95,16 +95,16 @@ def analyze_let(args: list[Value]) -> CallExpr:
             raise SyntaxError("invalid let syntax")
 
 
-def flatten_list(list_val: Value) -> list[Value]:
+def flatten_list(datum: Value) -> list[Value]:
     """
     Assuming list_val represents a properly-structured Scheme list, flatten
     the linked list structure into a Python list of value objects.
     """
-    match list_val:
+    match datum:
         case EmptyListValue():
             return []
         case PairValue():
-            cur = list_val
+            cur = datum
             items: list[Value] = []
 
             while True:

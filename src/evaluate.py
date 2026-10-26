@@ -44,15 +44,9 @@ def evaluate(env: Env, expr: Expr) -> Value:
         case LambdaExpr(params, body):
             return ClosureProcValue(env, params, body)
         case CallExpr(func, args):
-            func_val = evaluate(env, func)
-            args = [evaluate(env, arg_expr) for arg_expr in args]
-            match func_val:
-                case PrimitiveProcValue(primitive):
-                    return eval_primitive(primitive, args)
-                case ClosureProcValue() as closure:
-                    return eval_closure(closure, args)
-                case _:
-                    raise InvalidOperatorError()
+            return apply(
+                evaluate(env, func), [evaluate(env, arg_expr) for arg_expr in args]
+            )
         case AndExpr(operands):
             for o in operands:
                 if not truthy(evaluate(env, o)):
@@ -70,6 +64,16 @@ def evaluate(env: Env, expr: Expr) -> Value:
             return evaluate(env, else_body)
         case _:
             assert_never(expr)
+
+
+def apply(func: Value, args: list[Value]) -> Value:
+    match func:
+        case PrimitiveProcValue(primitive):
+            return eval_primitive(primitive, args)
+        case ClosureProcValue() as closure:
+            return eval_closure(closure, args)
+        case _:
+            raise InvalidOperatorError()
 
 
 def eval_closure(closure: ClosureProcValue, args: list[Value]) -> Value:
