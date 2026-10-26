@@ -48,14 +48,17 @@ def evaluate(env: Env, expr: Expr) -> Value:
                 evaluate(env, func), [evaluate(env, arg_expr) for arg_expr in args]
             )
         case AndExpr(operands):
+            ret = BoolValue(True)
             for o in operands:
-                if not truthy(evaluate(env, o)):
+                ret = evaluate(env, o)
+                if not truthy(ret):
                     return BoolValue(False)
-            return BoolValue(True)
+            return ret
         case OrExpr(operands):
             for o in operands:
-                if truthy(evaluate(env, o)):
-                    return BoolValue(True)
+                v = evaluate(env, o)
+                if truthy(v):
+                    return v
             return BoolValue(False)
         case IfExpr(pred, then_body, else_body):
             if truthy(evaluate(env, pred)):
