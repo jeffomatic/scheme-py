@@ -1,4 +1,4 @@
-class SyntaxError(Exception):
+class InvalidSyntaxError(Exception):
     pass
 
 

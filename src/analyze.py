@@ -1,4 +1,4 @@
-from errors import InvalidDatumError
+from errors import InvalidDatumError, InvalidSyntaxError
 from exprs import (
     AndExpr,
     CallExpr,
@@ -49,23 +49,17 @@ def analyze_define(datums: list[Value]) -> DefineExpr:
         case SymbolValue(name), body_val:
             return DefineExpr(name, analyze(body_val))
         case _:
-            raise SyntaxError("invalid define syntax")
+            raise InvalidSyntaxError("invalid define syntax")
 
 
 def analyze_lambda(datums: list[Value]) -> LambdaExpr:
     match datums:
         case PairValue() as params_val, *body_vals:
-            params: list[str] = []
-            for pv in flatten_list(params_val):
-                match pv:
-                    case SymbolValue(text):
-                        params.append(text)
-                    case _:
-                        raise SyntaxError("invalid lambda syntax")
-
-            return LambdaExpr(params, [analyze(v) for v in body_vals])
+            params: list[str] = [must_symbol(v) for v in flatten_list(params_val)]
+            body = parse_body(body_vals)
+            return LambdaExpr(params, body)
         case _:
-            raise SyntaxError("invalid lambda syntax")
+            raise InvalidSyntaxError("invalid lambda syntax")
 
 
 def analyze_if(datums: list[Value]) -> IfExpr:
@@ -73,7 +67,7 @@ def analyze_if(datums: list[Value]) -> IfExpr:
         case [pred_val, then_val, else_val]:
             return IfExpr(analyze(pred_val), analyze(then_val), analyze(else_val))
         case _:
-            raise SyntaxError("invalid if syntax")
+            raise InvalidSyntaxError("invalid if syntax")
 
 
 def analyze_let(datums: list[Value]) -> CallExpr:
@@ -82,10 +76,10 @@ def analyze_let(datums: list[Value]) -> CallExpr:
             bindings = [parse_let_binding(d) for d in flatten_list(decls_val)]
             decl_names = [name for name, _ in bindings]
             decl_bodies = [expr for _, expr in bindings]
-            body = [analyze(v) for v in body_vals]
+            body = parse_body(body_vals)
             return CallExpr(LambdaExpr(decl_names, body), decl_bodies)
         case _:
-            raise SyntaxError("invalid let syntax")
+            raise InvalidSyntaxError("invalid let syntax")
 
 
 def parse_let_binding(datum: Value) -> tuple[str, Expr]:
@@ -93,7 +87,22 @@ def parse_let_binding(datum: Value) -> tuple[str, Expr]:
         case [SymbolValue(name), body_val]:
             return (name, analyze(body_val))
         case _:
-            raise SyntaxError("invalid let syntax")
+            raise InvalidSyntaxError("invalid let syntax")
+
+
+def parse_body(datums: list[Value]) -> list[Expr]:
+    body = [analyze(v) for v in datums]
+    if not body:
+        raise InvalidSyntaxError("empty body")
+    return body
+
+
+def must_symbol(v: Value) -> str:
+    match v:
+        case SymbolValue(s):
+            return s
+        case _:
+            raise InvalidSyntaxError("expected symbol")
 
 
 def flatten_list(datum: Value) -> list[Value]:
