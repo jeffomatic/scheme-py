@@ -1,6 +1,7 @@
 from typing import assert_never
 
-from analyze import (
+from env import Env
+from exprs import (
     AndExpr,
     CallExpr,
     ConstExpr,
@@ -12,7 +13,6 @@ from analyze import (
     OrExpr,
     VarRefExpr,
 )
-from env import Env
 from primitives import eval_primitive
 from values import (
     ArityError,
@@ -44,11 +44,10 @@ def evaluate(env: Env, expr: Expr) -> Value:
             return UnspecifiedValue()
         case LambdaExpr(params, body):
             return ClosureProcValue(env, params, body)
-        case CallExpr(items):
-            vals = [evaluate(env, i) for i in items]
-            func = vals[0]
-            args = vals[1:]
-            match func:
+        case CallExpr(func, args):
+            func_val = evaluate(env, func)
+            args = [evaluate(env, arg_expr) for arg_expr in args]
+            match func_val:
                 case PrimitiveProcValue(primitive):
                     return eval_primitive(primitive, args)
                 case ClosureProcValue() as closure:
