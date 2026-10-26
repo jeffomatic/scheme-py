@@ -9,7 +9,6 @@ from exprs import (
     Expr,
     IfExpr,
     LambdaExpr,
-    LetExpr,
     OrExpr,
     VarRefExpr,
 )
@@ -69,14 +68,6 @@ def evaluate(env: Env, expr: Expr) -> Value:
                 return evaluate(env, then_body)
 
             return evaluate(env, else_body)
-        case LetExpr(decls, body):
-            inner_env = Env(env)
-            for name, decl_expr in decls:
-                inner_env.bind(name, evaluate(env, decl_expr))
-            ret = UnspecifiedValue()
-            for body_expr in body:
-                ret = evaluate(inner_env, body_expr)
-            return ret
         case _:
             assert_never(expr)
 

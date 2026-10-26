@@ -7,7 +7,6 @@ from exprs import (
     Expr,
     IfExpr,
     LambdaExpr,
-    LetExpr,
     OrExpr,
     VarRefExpr,
 )
@@ -77,19 +76,21 @@ def analyze_if(args: list[Value]) -> IfExpr:
             raise SyntaxError("invalid if syntax")
 
 
-def analyze_let(args: list[Value]) -> LetExpr:
+def analyze_let(args: list[Value]) -> CallExpr:
     match args:
         case [decls_val, *body_vals]:
-            decls: list[tuple[str, Expr]] = []
+            decl_names: list[str] = []
+            decl_bodies: list[Expr] = []
             for decl_val in flatten_list(decls_val):
                 match flatten_list(decl_val):
-                    case [SymbolValue(name), decl_body_val]:
-                        decls.append((name, analyze(decl_body_val)))
+                    case [SymbolValue(name), body_val]:
+                        decl_names.append(name)
+                        decl_bodies.append(analyze(body_val))
                     case _:
                         raise SyntaxError("invalid let syntax")
 
             body = [analyze(v) for v in body_vals]
-            return LetExpr(decls, body)
+            return CallExpr(LambdaExpr(decl_names, body), decl_bodies)
         case _:
             raise SyntaxError("invalid let syntax")
 

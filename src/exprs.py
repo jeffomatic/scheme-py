@@ -48,12 +48,6 @@ class IfExpr:
     else_body: Expr
 
 
-@dataclass
-class LetExpr:
-    decls: list[tuple[str, Expr]]
-    body: list[Expr]
-
-
 Expr = (
     ConstExpr
     | VarRefExpr
@@ -63,5 +57,4 @@ Expr = (
     | DefineExpr
     | LambdaExpr
     | IfExpr
-    | LetExpr
 )
