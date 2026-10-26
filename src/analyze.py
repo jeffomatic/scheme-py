@@ -79,18 +79,19 @@ def analyze_if(datums: list[Value]) -> IfExpr:
 def analyze_let(datums: list[Value]) -> CallExpr:
     match datums:
         case [decls_val, *body_vals]:
-            decl_names: list[str] = []
-            decl_bodies: list[Expr] = []
-            for decl_val in flatten_list(decls_val):
-                match flatten_list(decl_val):
-                    case [SymbolValue(name), body_val]:
-                        decl_names.append(name)
-                        decl_bodies.append(analyze(body_val))
-                    case _:
-                        raise SyntaxError("invalid let syntax")
-
+            bindings = [parse_let_binding(d) for d in flatten_list(decls_val)]
+            decl_names = [name for name, _ in bindings]
+            decl_bodies = [expr for _, expr in bindings]
             body = [analyze(v) for v in body_vals]
             return CallExpr(LambdaExpr(decl_names, body), decl_bodies)
+        case _:
+            raise SyntaxError("invalid let syntax")
+
+
+def parse_let_binding(datum: Value) -> tuple[str, Expr]:
+    match flatten_list(datum):
+        case [SymbolValue(name), body_val]:
+            return (name, analyze(body_val))
         case _:
             raise SyntaxError("invalid let syntax")
 
