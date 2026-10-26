@@ -66,6 +66,8 @@ def analyze_if(datums: list[Value]) -> IfExpr:
     match datums:
         case [pred_val, then_val, else_val]:
             return IfExpr(analyze(pred_val), analyze(then_val), analyze(else_val))
+        case [pred_val, then_val]:
+            return IfExpr(analyze(pred_val), analyze(then_val), None)
         case _:
             raise InvalidSyntaxError("invalid if syntax")
 

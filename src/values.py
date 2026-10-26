@@ -52,6 +52,7 @@ class ClosureProcValue:
 
 
 # the unusable return value for statements like `define`
+@dataclass
 class UnspecifiedValue:
     pass
 

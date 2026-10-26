@@ -45,7 +45,7 @@ class LambdaExpr:
 class IfExpr:
     pred: Expr
     then_body: Expr
-    else_body: Expr
+    else_body: Expr | None
 
 
 Expr = (

@@ -3,7 +3,7 @@
 import pytest
 
 from source import evaluate_source
-from values import BoolValue, EmptyListValue, NumberValue, Value
+from values import BoolValue, EmptyListValue, NumberValue, UnspecifiedValue, Value
 
 
 @pytest.mark.parametrize(
@@ -54,6 +54,10 @@ from values import BoolValue, EmptyListValue, NumberValue, Value
         ("(define foo 1) (define bar (> foo 0)) bar", BoolValue(True)),
         ("(define foo 1) (define bar (> foo 2)) bar", BoolValue(False)),
         ("((lambda () 5))", NumberValue(5)),
+        ("(if #t 1 2)", NumberValue(1)),
+        ("(if #f 1 2)", NumberValue(2)),
+        ("(if #t 1)", NumberValue(1)),
+        ("(if #f 1)", UnspecifiedValue()),
         # builtins
         ("(>= 1 0)", BoolValue(True)),
         ("(>= 1 1)", BoolValue(True)),

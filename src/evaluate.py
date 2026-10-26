@@ -64,7 +64,10 @@ def evaluate(env: Env, expr: Expr) -> Value:
             if truthy(evaluate(env, pred)):
                 return evaluate(env, then_body)
 
-            return evaluate(env, else_body)
+            if else_body:
+                return evaluate(env, else_body)
+
+            return UnspecifiedValue()
         case _:
             assert_never(expr)
 
