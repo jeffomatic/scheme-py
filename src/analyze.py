@@ -54,7 +54,7 @@ def analyze_define(datums: list[Value]) -> DefineExpr:
 
 def analyze_lambda(datums: list[Value]) -> LambdaExpr:
     match datums:
-        case PairValue() as params_val, *body_vals:
+        case params_val, *body_vals:
             params: list[str] = [must_symbol(v) for v in flatten_list(params_val)]
             body = parse_body(body_vals)
             return LambdaExpr(params, body)

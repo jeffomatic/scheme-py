@@ -51,6 +51,7 @@ from values import BoolValue, EmptyListValue, NumberValue, Value
         ("(define foo 1) foo", NumberValue(1)),
         ("(define foo 1) (define bar (> foo 0)) bar", BoolValue(True)),
         ("(define foo 1) (define bar (> foo 2)) bar", BoolValue(False)),
+        ("((lambda () 5))", NumberValue(5)),
         # builtins
         ("(>= 1 0)", BoolValue(True)),
         ("(>= 1 1)", BoolValue(True)),
