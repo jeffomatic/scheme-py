@@ -61,6 +61,41 @@ from values import BoolValue, EmptyListValue, NumberValue, Value
         ("(<= 1 0)", BoolValue(False)),
         ("(<= 1 1)", BoolValue(True)),
         ("(<= 1 2)", BoolValue(True)),
+        (
+            # Fibonacci with define
+            """
+(define fib (lambda (n)
+    (if (= n 0)
+        0
+        (if (= n 1)
+            1
+            (+ (fib (- n 1))
+                (fib (- n 2)))))))
+(fib 10)
+""",
+            NumberValue(55),
+        ),
+        (
+            # Fibonacci with y combinator
+            """
+(let (
+    (y (lambda (f)
+        ((lambda (proc)
+            (f (lambda (arg) ((proc proc) arg))))
+        (lambda (proc)
+            (f (lambda (arg) ((proc proc) arg)))))))
+    (fib-pre (lambda (f)
+        (lambda (n)
+            (if (= n 0)
+                0
+                (if (= n 1)
+                    1
+                    (+ (f (- n 1)) (f (- n 2)))))))))
+    (let ((fib (y fib-pre)))
+        (fib 10)))
+""",
+            NumberValue(55),
+        ),
     ],
 )
 def test_eval(src: str, want: Value):

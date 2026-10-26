@@ -40,7 +40,30 @@ class LambdaExpr:
     body: list[Expr]
 
 
-Expr = ConstExpr | VarRefExpr | CallExpr | AndExpr | OrExpr | DefineExpr | LambdaExpr
+@dataclass
+class IfExpr:
+    pred: Expr
+    then_body: Expr
+    else_body: Expr
+
+
+@dataclass
+class LetExpr:
+    decls: list[tuple[str, Expr]]
+    body: list[Expr]
+
+
+Expr = (
+    ConstExpr
+    | VarRefExpr
+    | CallExpr
+    | AndExpr
+    | OrExpr
+    | DefineExpr
+    | LambdaExpr
+    | IfExpr
+    | LetExpr
+)
 
 
 class InvalidAnalyzeValueError(Exception):
@@ -66,15 +89,15 @@ def analyze(expr_val: Value) -> Expr:
 def analyze_pair(pair: PairValue) -> Expr:
     match pair.car:
         case SymbolValue("and"):
-            return AndExpr([analyze(item) for item in flatten_list(pair.cdr)])
+            return AndExpr(analyze_list(pair.cdr))
         case SymbolValue("or"):
-            return OrExpr([analyze(item) for item in flatten_list(pair.cdr)])
+            return OrExpr(analyze_list(pair.cdr))
         case SymbolValue("define"):
             match flatten_list(pair.cdr):
                 case SymbolValue(name), body_val:
                     return DefineExpr(name, analyze(body_val))
                 case _:
-                    raise InvalidAnalyzeValueError()
+                    raise SyntaxError("invalid define syntax")
         case SymbolValue("lambda"):
             match flatten_list(pair.cdr):
                 case PairValue() as params_val, *body_vals:
@@ -84,17 +107,36 @@ def analyze_pair(pair: PairValue) -> Expr:
                             case SymbolValue(text):
                                 params.append(text)
                             case _:
-                                raise InvalidAnalyzeValueError()
+                                raise SyntaxError("invalid lambda syntax")
 
                     return LambdaExpr(params, [analyze(v) for v in body_vals])
                 case _:
-                    raise InvalidAnalyzeValueError()
+                    raise SyntaxError("invalid lambda syntax")
+        case SymbolValue("if"):
+            match flatten_list(pair.cdr):
+                case [pred_val, then_val, else_val]:
+                    return IfExpr(
+                        analyze(pred_val), analyze(then_val), analyze(else_val)
+                    )
+                case _:
+                    raise SyntaxError("invalid if syntax")
+        case SymbolValue("let"):
+            match flatten_list(pair.cdr):
+                case [decls_val, *body_vals]:
+                    decls: list[tuple[str, Expr]] = []
+                    for decl_val in flatten_list(decls_val):
+                        match flatten_list(decl_val):
+                            case [SymbolValue(name), decl_body_val]:
+                                decls.append((name, analyze(decl_body_val)))
+                            case _:
+                                raise SyntaxError("invalid let syntax")
+
+                    body = [analyze(v) for v in body_vals]
+                    return LetExpr(decls, body)
+                case _:
+                    raise SyntaxError("invalid let syntax")
         case (
-            SymbolValue("lambda")
-            | SymbolValue("define")
-            | SymbolValue("if")
-            | SymbolValue("let")
-            | SymbolValue("set!")
+            SymbolValue("set!")
             | SymbolValue("quote")
             | SymbolValue("cond")
             | SymbolValue("begin")
@@ -106,6 +148,10 @@ def analyze_pair(pair: PairValue) -> Expr:
 
 
 def flatten_list(list_val: Value) -> list[Value]:
+    """
+    Assuming list_val represents a properly-structured Scheme list, flatten
+    the linked list structure into a Python list of value objects.
+    """
     if not isinstance(list_val, PairValue):
         raise InvalidAnalyzeValueError()
 
@@ -132,14 +178,4 @@ def analyze_list(list_val: Value) -> list[Expr]:
     separate analysis of each item in the list and returns a host-language list
     of the resulting expressions.
     """
-
-    if not isinstance(list_val, PairValue):
-        raise InvalidAnalyzeValueError()
-
-    match list_val.cdr:
-        case EmptyListValue():
-            return [analyze(list_val.car)]
-        case PairValue():
-            return [analyze(list_val.car)] + analyze_list(list_val.cdr)
-        case _:
-            raise InvalidAnalyzeValueError()
+    return [analyze(v) for v in flatten_list(list_val)]

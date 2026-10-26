@@ -6,7 +6,9 @@ from analyze import (
     ConstExpr,
     DefineExpr,
     Expr,
+    IfExpr,
     LambdaExpr,
+    LetExpr,
     OrExpr,
     VarRefExpr,
 )
@@ -63,6 +65,19 @@ def evaluate(env: Env, expr: Expr) -> Value:
                 if truthy(evaluate(env, o)):
                     return BoolValue(True)
             return BoolValue(False)
+        case IfExpr(pred, then_body, else_body):
+            if truthy(evaluate(env, pred)):
+                return evaluate(env, then_body)
+
+            return evaluate(env, else_body)
+        case LetExpr(decls, body):
+            inner_env = Env(env)
+            for name, decl_expr in decls:
+                inner_env.bind(name, evaluate(env, decl_expr))
+            ret = UnspecifiedValue()
+            for body_expr in body:
+                ret = evaluate(inner_env, body_expr)
+            return ret
         case _:
             assert_never(expr)
 
