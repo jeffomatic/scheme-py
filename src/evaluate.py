@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import assert_never
 
 from env import Env
@@ -32,47 +33,60 @@ class MalformedProcedureCallError(Exception):
     pass
 
 
+@dataclass
+class TailCall:
+    env: Env
+    expr: Expr
+
+
 def evaluate(env: Env, expr: Expr) -> Value:
-    match expr:
-        case ConstExpr(val):
-            return val
-        case VarRefExpr(name):
-            return env.resolve(name)
-        case DefineExpr(name, body):
-            env.bind(name, evaluate(env, body))
-            return UnspecifiedValue()
-        case LambdaExpr(params, body):
-            return ClosureProcValue(env, params, body)
-        case CallExpr(func, args):
-            return apply(
-                evaluate(env, func), [evaluate(env, arg_expr) for arg_expr in args]
-            )
-        case AndExpr(operands):
-            ret = BoolValue(True)
-            for o in operands:
-                ret = evaluate(env, o)
-                if not truthy(ret):
-                    return BoolValue(False)
-            return ret
-        case OrExpr(operands):
-            for o in operands:
-                v = evaluate(env, o)
-                if truthy(v):
-                    return v
-            return BoolValue(False)
-        case IfExpr(pred, then_body, else_body):
-            if truthy(evaluate(env, pred)):
-                return evaluate(env, then_body)
+    while True:
+        match expr:
+            case ConstExpr(val):
+                return val
+            case VarRefExpr(name):
+                return env.resolve(name)
+            case CallExpr(func, args):
+                arg_vals = [evaluate(env, arg_expr) for arg_expr in args]
+                match apply(evaluate(env, func), arg_vals):
+                    case TailCall() as tc:
+                        env = tc.env
+                        expr = tc.expr
+                    case _ as v:
+                        return v
+            case IfExpr(pred, then_body, else_body):
+                if truthy(evaluate(env, pred)):
+                    expr = then_body
+                elif else_body:
+                    expr = else_body
+                else:
+                    return UnspecifiedValue()
+            case AndExpr([]):
+                return BoolValue(True)
+            case AndExpr(operands):
+                *leading, last = operands
+                for o in leading:
+                    if not truthy(v := evaluate(env, o)):
+                        return v
+                expr = last
+            case OrExpr([]):
+                return BoolValue(False)
+            case OrExpr(operands):
+                *leading, last = operands
+                for o in leading:
+                    if truthy(v := evaluate(env, o)):
+                        return v
+                expr = last
+            case DefineExpr(name, body):
+                env.bind(name, evaluate(env, body))
+                return UnspecifiedValue()
+            case LambdaExpr(params, body):
+                return ClosureProcValue(env, params, body)
+            case _:
+                assert_never(expr)
 
-            if else_body:
-                return evaluate(env, else_body)
 
-            return UnspecifiedValue()
-        case _:
-            assert_never(expr)
-
-
-def apply(func: Value, args: list[Value]) -> Value:
+def apply(func: Value, args: list[Value]) -> Value | TailCall:
     match func:
         case PrimitiveProcValue(primitive):
             return eval_primitive(primitive, args)
@@ -82,7 +96,7 @@ def apply(func: Value, args: list[Value]) -> Value:
             raise InvalidOperatorError()
 
 
-def eval_closure(closure: ClosureProcValue, args: list[Value]) -> Value:
+def eval_closure(closure: ClosureProcValue, args: list[Value]) -> Value | TailCall:
     if len(closure.params) != len(args):
         raise ArityError()
 
@@ -90,7 +104,8 @@ def eval_closure(closure: ClosureProcValue, args: list[Value]) -> Value:
     for name, argval in zip(closure.params, args):
         env.bind(name, argval)
 
-    for expr in closure.body[:-1]:
+    *leading, last = closure.body
+    for expr in leading:
         evaluate(env, expr)
 
-    return evaluate(env, closure.body[-1])
+    return TailCall(env, last)

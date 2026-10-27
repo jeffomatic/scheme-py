@@ -1,5 +1,4 @@
 from analyze import analyze
-from builtin import BUILTIN_SRC
 from env import Env
 from evaluate import evaluate
 from lexer import Lexer
@@ -12,8 +11,6 @@ def make_default_env() -> Env:
     env = Env()
     for name in PRIMITIVES:
         env.bind(name, PrimitiveProcValue(name))
-
-    evaluate_source(BUILTIN_SRC, env)
 
     return env
 

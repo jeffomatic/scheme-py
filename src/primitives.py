@@ -70,6 +70,36 @@ def eval_gt(args: list[Value]) -> Value:
             raise ArityError()
 
 
+def eval_gte(args: list[Value]) -> Value:
+    match args:
+        case [NumberValue(a), NumberValue(b)]:
+            return BoolValue(a >= b)
+        case [a, b]:
+            raise ValueTypeError()
+        case _:
+            raise ArityError()
+
+
+def eval_lt(args: list[Value]) -> Value:
+    match args:
+        case [NumberValue(a), NumberValue(b)]:
+            return BoolValue(a < b)
+        case [a, b]:
+            raise ValueTypeError()
+        case _:
+            raise ArityError()
+
+
+def eval_lte(args: list[Value]) -> Value:
+    match args:
+        case [NumberValue(a), NumberValue(b)]:
+            return BoolValue(a <= b)
+        case [a, b]:
+            raise ValueTypeError()
+        case _:
+            raise ArityError()
+
+
 def eval_num_eq(args: list[Value]) -> Value:
     match args:
         case [NumberValue(a), NumberValue(b)]:
@@ -94,6 +124,9 @@ PRIMITIVES: dict[str, Callable[[list[Value]], Value]] = {
     "*": eval_mul,
     "/": eval_div,
     ">": eval_gt,
+    ">=": eval_gte,
+    "<": eval_lt,
+    "<=": eval_lte,
     "=": eval_num_eq,
     "not": eval_not,
 }

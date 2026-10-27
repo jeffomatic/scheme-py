@@ -103,6 +103,17 @@ from values import BoolValue, EmptyListValue, NumberValue, UnspecifiedValue, Val
 """,
             NumberValue(55),
         ),
+        # proper tail calls (don't expand host language stack for tail recursion)
+        (
+            """
+(define loop (lambda (end acc)
+    (if (< acc end)
+        (loop end (+ acc 1))
+        acc)))
+(loop 100000 0)
+""",
+            NumberValue(100000),
+        ),
     ],
 )
 def test_eval(src: str, want: Value):
