@@ -4,7 +4,7 @@ from evaluate import evaluate
 from lexer import Lexer
 from primitives import PRIMITIVES
 from reader import Reader
-from values import EmptyListValue, PrimitiveProcValue, Value
+from values import EMPTY_LIST, PrimitiveProcValue, Value
 
 
 def make_default_env() -> Env:
@@ -23,7 +23,7 @@ def evaluate_source(src: str, env: Env | None = None) -> Value:
     top_level = read_source(src)
     env = env or make_default_env()
 
-    res = EmptyListValue()
+    res = EMPTY_LIST
     for v in top_level:
         res = evaluate(env, analyze(v))
 

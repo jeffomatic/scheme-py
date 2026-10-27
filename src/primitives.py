@@ -1,7 +1,15 @@
 import math
 from collections.abc import Callable
 
-from values import ArityError, BoolValue, NumberValue, Value, ValueTypeError, truthy
+from values import (
+    FALSE,
+    TRUE,
+    ArityError,
+    NumberValue,
+    Value,
+    ValueTypeError,
+    truthy,
+)
 
 
 class UnknownPrimitiveError(Exception):
@@ -63,7 +71,7 @@ def eval_div(args: list[Value]) -> Value:
 def eval_gt(args: list[Value]) -> Value:
     match args:
         case [NumberValue(a), NumberValue(b)]:
-            return BoolValue(a > b)
+            return TRUE if a > b else FALSE
         case [a, b]:
             raise ValueTypeError()
         case _:
@@ -73,7 +81,7 @@ def eval_gt(args: list[Value]) -> Value:
 def eval_gte(args: list[Value]) -> Value:
     match args:
         case [NumberValue(a), NumberValue(b)]:
-            return BoolValue(a >= b)
+            return TRUE if a >= b else FALSE
         case [a, b]:
             raise ValueTypeError()
         case _:
@@ -83,7 +91,7 @@ def eval_gte(args: list[Value]) -> Value:
 def eval_lt(args: list[Value]) -> Value:
     match args:
         case [NumberValue(a), NumberValue(b)]:
-            return BoolValue(a < b)
+            return TRUE if a < b else FALSE
         case [a, b]:
             raise ValueTypeError()
         case _:
@@ -93,7 +101,7 @@ def eval_lt(args: list[Value]) -> Value:
 def eval_lte(args: list[Value]) -> Value:
     match args:
         case [NumberValue(a), NumberValue(b)]:
-            return BoolValue(a <= b)
+            return TRUE if a <= b else FALSE
         case [a, b]:
             raise ValueTypeError()
         case _:
@@ -103,7 +111,7 @@ def eval_lte(args: list[Value]) -> Value:
 def eval_num_eq(args: list[Value]) -> Value:
     match args:
         case [NumberValue(a), NumberValue(b)]:
-            return BoolValue(a == b)
+            return TRUE if a == b else FALSE
         case [a, b]:
             raise ValueTypeError()
         case _:
@@ -113,7 +121,7 @@ def eval_num_eq(args: list[Value]) -> Value:
 def eval_not(args: list[Value]) -> Value:
     match args:
         case [v]:
-            return BoolValue(not truthy(v))
+            return TRUE if not truthy(v) else FALSE
         case _:
             raise ArityError()
 

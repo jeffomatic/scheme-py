@@ -4,31 +4,27 @@ import pytest
 
 from lexer import Lexer
 from reader import Reader
-from values import BoolValue, EmptyListValue, NumberValue, PairValue, SymbolValue, Value
+from values import EMPTY_LIST, FALSE, TRUE, NumberValue, PairValue, SymbolValue, Value
 
 
 @pytest.mark.parametrize(
     "src, want",
     [
         ("", []),
-        ("()", [EmptyListValue()]),
+        ("()", [EMPTY_LIST]),
         (
             "(())",
-            [PairValue(EmptyListValue(), EmptyListValue())],
+            [PairValue(EMPTY_LIST, EMPTY_LIST)],
         ),
-        ("(1234.5678)", [PairValue(NumberValue(1234.5678), EmptyListValue())]),
-        ("(foo)", [PairValue(SymbolValue("foo"), EmptyListValue())]),
-        ("#t", [BoolValue(True)]),
-        ("#true", [BoolValue(True)]),
-        ("#f", [BoolValue(False)]),
-        ("#false", [BoolValue(False)]),
+        ("(1234.5678)", [PairValue(NumberValue(1234.5678), EMPTY_LIST)]),
+        ("(foo)", [PairValue(SymbolValue("foo"), EMPTY_LIST)]),
+        ("#t", [TRUE]),
+        ("#true", [TRUE]),
+        ("#f", [FALSE]),
+        ("#false", [FALSE]),
         (
             "((foo))",
-            [
-                PairValue(
-                    PairValue(SymbolValue("foo"), EmptyListValue()), EmptyListValue()
-                )
-            ],
+            [PairValue(PairValue(SymbolValue("foo"), EMPTY_LIST), EMPTY_LIST)],
         ),
         (
             "((foo bar) baz)",
@@ -36,9 +32,9 @@ from values import BoolValue, EmptyListValue, NumberValue, PairValue, SymbolValu
                 PairValue(
                     PairValue(
                         SymbolValue("foo"),
-                        PairValue(SymbolValue("bar"), EmptyListValue()),
+                        PairValue(SymbolValue("bar"), EMPTY_LIST),
                     ),
-                    PairValue(SymbolValue("baz"), EmptyListValue()),
+                    PairValue(SymbolValue("baz"), EMPTY_LIST),
                 )
             ],
         ),
@@ -48,17 +44,17 @@ from values import BoolValue, EmptyListValue, NumberValue, PairValue, SymbolValu
                 PairValue(
                     PairValue(
                         SymbolValue("foo"),
-                        PairValue(SymbolValue("bar"), EmptyListValue()),
+                        PairValue(SymbolValue("bar"), EMPTY_LIST),
                     ),
                     PairValue(
                         PairValue(
                             SymbolValue("baz"),
                             PairValue(
-                                PairValue(SymbolValue("quux"), EmptyListValue()),
-                                EmptyListValue(),
+                                PairValue(SymbolValue("quux"), EMPTY_LIST),
+                                EMPTY_LIST,
                             ),
                         ),
-                        EmptyListValue(),
+                        EMPTY_LIST,
                     ),
                 )
             ],

@@ -6,7 +6,16 @@ from lexer import (
     OpenParenToken,
     Token,
 )
-from values import BoolValue, EmptyListValue, NumberValue, PairValue, SymbolValue, Value
+from values import (
+    EMPTY_LIST,
+    FALSE,
+    TRUE,
+    EmptyListValue,
+    NumberValue,
+    PairValue,
+    SymbolValue,
+    Value,
+)
 
 
 class ReadError(Exception):
@@ -39,7 +48,7 @@ class Reader:
             case IdentifierToken(text):
                 return SymbolValue(text)
             case BoolToken(val):
-                return BoolValue(val)
+                return TRUE if val else FALSE
             case _:
                 raise ReadError()
 
@@ -52,7 +61,7 @@ class Reader:
 
         if isinstance(first, CloseParenToken):
             self.cur += 1
-            return EmptyListValue()
+            return EMPTY_LIST
 
         car = self.read_single_value()
         cdr = self.read_list()

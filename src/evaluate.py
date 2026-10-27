@@ -15,11 +15,12 @@ from exprs import (
 )
 from primitives import eval_primitive
 from values import (
+    FALSE,
+    TRUE,
+    UNSPECIFIED,
     ArityError,
-    BoolValue,
     ClosureProcValue,
     PrimitiveProcValue,
-    UnspecifiedValue,
     Value,
     truthy,
 )
@@ -60,9 +61,9 @@ def evaluate(env: Env, expr: Expr) -> Value:
                 elif else_body:
                     expr = else_body
                 else:
-                    return UnspecifiedValue()
+                    return UNSPECIFIED
             case AndExpr([]):
-                return BoolValue(True)
+                return TRUE
             case AndExpr(operands):
                 *leading, last = operands
                 for o in leading:
@@ -70,7 +71,7 @@ def evaluate(env: Env, expr: Expr) -> Value:
                         return v
                 expr = last
             case OrExpr([]):
-                return BoolValue(False)
+                return FALSE
             case OrExpr(operands):
                 *leading, last = operands
                 for o in leading:
@@ -79,7 +80,7 @@ def evaluate(env: Env, expr: Expr) -> Value:
                 expr = last
             case DefineExpr(name, body):
                 env.bind(name, evaluate(env, body))
-                return UnspecifiedValue()
+                return UNSPECIFIED
             case LambdaExpr(params, body):
                 return ClosureProcValue(env, params, body)
             case _:

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -16,14 +17,20 @@ class NumberValue:
     val: float
 
 
-@dataclass
-class BoolValue:
-    val: bool
+class BoolValue(Enum):
+    TRUE = True
+    FALSE = False
 
 
-@dataclass
-class EmptyListValue:
-    pass
+TRUE = BoolValue.TRUE
+FALSE = BoolValue.FALSE
+
+
+class EmptyListValue(Enum):
+    EMPTY_LIST = "()"
+
+
+EMPTY_LIST = EmptyListValue.EMPTY_LIST
 
 
 # we need to be careful about equivalent of pair values
@@ -52,10 +59,11 @@ class ClosureProcValue:
 
 
 # the unusable return value for statements like `define`
-@dataclass
-class UnspecifiedValue:
-    pass
+class UnspecifiedValue(Enum):
+    UNSPECIFIED = "<unspecified>"
 
+
+UNSPECIFIED = UnspecifiedValue.UNSPECIFIED
 
 Value = (
     SymbolValue
@@ -78,8 +86,4 @@ class ValueTypeError(Exception):
 
 
 def truthy(val: Value) -> bool:
-    match val:
-        case BoolValue(False):
-            return False
-        case _:
-            return True
+    return val != FALSE
